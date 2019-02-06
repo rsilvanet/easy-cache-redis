@@ -1,13 +1,21 @@
-﻿using System;
-using EasyCache.NET.Storage;
+﻿using EasyCache.NET.Storage;
+using ServiceStack.Redis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EasyCache.NET.Redis
 {
     public class RedisStorage : ICacheStorage
     {
+        private readonly IRedisClientsManager _client;
+
         public T GetValue<T>(string key)
         {
-            throw new NotImplementedException();
+            using (var redis = _client.GetClient())
+            {
+                return redis.GetValues<T>(new List<string> { key }).FirstOrDefault();
+            }
         }
 
         public void SetValue<T>(string key, T value, TimeSpan expiration)
