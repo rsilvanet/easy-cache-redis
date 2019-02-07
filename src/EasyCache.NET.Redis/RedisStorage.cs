@@ -1,8 +1,9 @@
 ﻿using EasyCache.NET.Storage;
 using ServiceStack.Redis;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace EasyCache.NET.Redis
 {
@@ -14,28 +15,47 @@ namespace EasyCache.NET.Redis
         {
             using (var redis = _client.GetClient())
             {
-                return redis.GetValues<T>(new List<string> { key }).FirstOrDefault();
+                var bytes = Encoding.Default.GetBytes(redis.GetValue(key));
+                var serializer = new DataContractJsonSerializer(typeof(T));
+
+                return (T)serializer.ReadObject(new MemoryStream(bytes));
             }
         }
 
         public void SetValue<T>(string key, T value, TimeSpan expiration)
         {
-            throw new NotImplementedException();
+            var stream = new MemoryStream();
+            var serializer = new DataContractJsonSerializer(typeof(T));
+            serializer.WriteObject(stream, value);
+
+            using (var redis = _client.GetClient())
+            {
+                redis.SetValue(key, Encoding.Default.GetString(stream.ToArray()));
+            }
         }
 
         public bool ContainsValidKey(string key)
         {
-            throw new NotImplementedException();
+            using (var redis = _client.GetClient())
+            {
+                return redis.ContainsKey(key);
+            }
         }
 
         public void RemoveKey(string key)
         {
-            throw new NotImplementedException();
+            using (var redis = _client.GetClient())
+            {
+                redis.Remove(key);
+            }
         }
 
         public void Reset()
         {
-            throw new NotImplementedException();
+            using (var redis = _client.GetClient())
+            {
+                redis.FlushAll();
+            }
         }
 
         public int Count()
