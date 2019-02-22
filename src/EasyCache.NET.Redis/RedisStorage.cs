@@ -1,4 +1,5 @@
 ﻿using EasyCache.NET.Storage;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
 using System.IO;
@@ -21,19 +22,12 @@ namespace EasyCache.NET.Redis
 
         public T GetValue<T>(string key)
         {
-            var bytes = Encoding.Default.GetBytes(_db.StringGet(key));
-            var serializer = new DataContractJsonSerializer(typeof(T));
-
-            return (T)serializer.ReadObject(new MemoryStream(bytes));
+            return JsonConvert.DeserializeObject<T>(_db.StringGet(key));
         }
 
         public void SetValue<T>(string key, T value, TimeSpan expiration)
         {
-            var stream = new MemoryStream();
-            var serializer = new DataContractJsonSerializer(typeof(T));
-            serializer.WriteObject(stream, value);
-
-            _db.SetAdd(key, stream.ToArray());
+            _db.StringSet(key, JsonConvert.SerializeObject(value));
         }
 
         public bool ContainsValidKey(string key)
