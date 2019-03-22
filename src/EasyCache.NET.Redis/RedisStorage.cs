@@ -20,32 +20,32 @@ namespace EasyCache.NET.Redis
             _db = _client.GetDatabase(db);
         }
 
-        public T GetValue<T>(string key)
+        public virtual T GetValue<T>(string key)
         {
             return JsonConvert.DeserializeObject<T>(_db.StringGet(key));
         }
 
-        public void SetValue<T>(string key, T value, TimeSpan expiration)
+        public virtual void SetValue<T>(string key, T value, TimeSpan expiration)
         {
             _db.StringSet(key, JsonConvert.SerializeObject(value));
         }
 
-        public bool ContainsValidKey(string key)
+        public virtual bool ContainsValidKey(string key)
         {
             return _db.KeyExists(key);
         }
 
-        public void RemoveKey(string key)
+        public virtual void RemoveKey(string key)
         {
             _db.KeyDelete(key);
         }
 
-        public void Reset()
+        public virtual void Reset()
         {
             _client.GetServer(_client.Configuration).FlushDatabase(_db.Database);
         }
 
-        public int Count()
+        public virtual int Count()
         {
             return _client.GetServer(_client.Configuration).Keys().Count();
         }
