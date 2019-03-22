@@ -14,6 +14,8 @@ namespace EasyCache.NET.Redis
         private readonly IConnectionMultiplexer _client;
         private readonly IDatabase _db;
 
+        public RedisStorage() { }
+
         public RedisStorage(string hostAndPort, int db)
         {
             _client = ConnectionMultiplexer.Connect(hostAndPort);
